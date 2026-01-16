@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deteksi Risiko Kehamilan</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #ffeef8 0%, #fff5f9 100%);
+            min-height: 100vh;
+            max-width: 480px;
+            margin: 0 auto;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff6b9d 0%, #ff8fab 100%);
+            padding: 20px;
+            color: white;
+            box-shadow: 0 2px 10px rgba(255, 107, 157, 0.3);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .header h1 {
+            font-size: 18px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .content {
+            padding: 20px;
+            padding-bottom: 180px;
+        }
+
+        .info-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        .info-card h3 {
+            color: #ff6b9d;
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-card p {
+            color: #666;
+            font-size: 13px;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .section-title {
+            color: #333;
+            font-size: 15px;
+            font-weight: 700;
+            margin: 25px 0 15px 0;
+            padding-left: 10px;
+            border-left: 4px solid #ff6b9d;
+        }
+
+        .risk-group {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .group-header {
+            background: linear-gradient(135deg, #ff6b9d 0%, #ff8fab 100%);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 14px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .checkbox-item:hover {
+            background: #fff5f9;
+            border-color: #ffcce0;
+        }
+
+        .checkbox-item.checked {
+            background: #ffe8f2;
+            border-color: #ff6b9d;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: #ff6b9d;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .checkbox-label {
+            cursor: pointer;
+            flex: 1;
+            font-size: 13px;
+            color: #333;
+            line-height: 1.5;
+        }
+
+        .score-badge {
+            background: #ff6b9d;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .result-section {
+            position: fixed;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            max-width: 480px;
+            width: 100%;
+            background: white;
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.1);
+            padding: 20px;
+            z-index: 99;
+            border-radius: 20px 20px 0 0;
+        }
+
+        .total-score {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .total-score span {
+            font-size: 14px;
+            color: #666;
+            font-weight: 600;
+        }
+
+        .total-score .score {
+            font-size: 28px;
+            font-weight: 700;
+            color: #ff6b9d;
+        }
+
+        .check-btn {
+            background: linear-gradient(135deg, #ff6b9d 0%, #ff8fab 100%);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .check-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 157, 0.3);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            max-width: 480px;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin: 20px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+        }
+
+        .modal-icon i {
+            font-size: 40px;
+        }
+
+        .modal-icon.low-risk {
+            background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
+            color: white;
+        }
+
+        .modal-icon.medium-risk {
+            background: linear-gradient(135deg, #ff9800 0%, #ffa726 100%);
+            color: white;
+        }
+
+        .modal-icon.high-risk {
+            background: linear-gradient(135deg, #f44336 0%, #ef5350 100%);
+            color: white;
+        }
+
+        .modal-title {
+            text-align: center;
+            font-size: 20px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .modal-score {
+            text-align: center;
+            font-size: 48px;
+            font-weight: 700;
+            color: #ff6b9d;
+            margin-bottom: 10px;
+        }
+
+        .modal-category {
+            text-align: center;
+            font-size: 18px;
+            font-weight: 700;
+            padding: 10px 20px;
+            border-radius: 25px;
+            margin: 0 auto 25px;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .modal-category.low-risk {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .modal-category.medium-risk {
+            background: #fff3e0;
+            color: #e65100;
+        }
+
+        .modal-category.high-risk {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .recommendation {
+            margin: 25px 0;
+        }
+
+        .recommendation h4 {
+            font-size: 15px;
+            font-weight: 700;
+            color: #ff6b9d;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .recommendation ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .recommendation li {
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 13px;
+            color: #666;
+            line-height: 1.6;
+            position: relative;
+            padding-left: 25px;
+        }
+
+        .recommendation li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #ff6b9d;
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .recommendation li:last-child {
+            border-bottom: none;
+        }
+
+        .close-modal-btn, .reset-btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .close-modal-btn {
+            background: linear-gradient(135deg, #ff6b9d 0%, #ff8fab 100%);
+            color: white;
+        }
+
+        .reset-btn {
+            background: #f5f5f5;
+            color: #666;
+        }
+
+        .close-modal-btn:hover, .reset-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            max-width: 480px;
+            width: 100%;
+            background: white;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            z-index: 100;
+        }
+
+        .nav-item {
+            text-align: center;
+            color: #999;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            flex: 1;
+        }
+
+        .nav-item.active {
+            color: #ff6b9d;
+        }
+
+        .nav-item i {
+            font-size: 22px;
+            display: block;
+            margin-bottom: 3px;
+        }
+
+        .nav-item span {
+            font-size: 10px;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <button class="back-btn" onclick="window.location.href='index.html'">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h1>Deteksi Risiko Kehamilan</h1>
+        </div>
+    </div>
+
+    <div class="content">
+        <div class="info-card">
+            <h3><i class="fas fa-info-circle"></i> Petunjuk</h3>
+            <p>Silakan pilih kondisi yang sesuai dengan kondisi ibu saat ini. Setiap kondisi memiliki skor risiko. Total skor akan menentukan tingkat risiko kehamilan dan rekomendasi tempat persalinan.</p>
+        </div>
+
+        <div class="section-title">Kelompok Faktor Risiko I</div>
+        <div class="risk-group">
+            <div class="group-header">
+                <i class="fas fa-user-circle"></i> Status Dasar Ibu
+            </div>
+            
+            <div class="checkbox-item checked">
+                <input type="checkbox" data-score="2" checked disabled>
+                <div class="checkbox-label">Primigravida (hamil anak pertama)</div>
+                <span class="score-badge">2</span>
+            </div>
+
+            <div class="checkbox-item">
+                <input type="checkbox" data-score="4" onchange="handleCheckboxChange(this)">
+                <div class="checkbox-label" onclick="toggleCheckFromLabel(this)">Primigravida terlalu muda, hamil ≤ 16 tahun</div>
+                <span class="score-badge">4</span>
+            </div>
+
+            <div class="checkbox-item">
+                <input type="checkbox" data-score="4" onchange="handleCheckboxChange(this)">
+                <div class="checkbox-label" onclick="toggleCheckFromLabel(this)">Primigravida terlalu tua, hamil ≥ 35 tahun</div>
+                <span class="score-badge">4</span>
+            </div>
+
+            <div class="checkbox-item">
+                <input type="checkbox" data-score="4" onchange="handleCheckboxChange(this)">
+                <div class="checkbox-label" onclick="toggleCheckFromLabel(this)">Primigravida tua sekunder, hamil I ≥ 35 tahun, P ≥ 1</div>
+                <span class="score-badge">4</span>
+            </div>
+
+            <div class="checkbox-item">
+                <input type="checkbox" data-score="4" onchange="handleCheckboxChange(this)">
+                <div class="checkbox-label" onclick="toggleCheckFromLabel(this)">Tinggi badan ≤ 145 cm</div>
+                <span class="score-badge">4</span>
+            </div>
+
+            <div class="checkbox-item">
+                <input type="checkbox" data-score="4" onchange="handleCheckboxChange(this)">
+                <div class="checkbox-label" onclick="toggleCheckFromLabel(this)">Pernah gagal kehamilan</div>
+                <span class="score-badge">4</span>
+            </div>
+
+            <div class="checkbox-item">
+                <input type="checkbox" data-score="4" onchange="handleCheckboxChange(this)">
+                <div class="checkbox-label" onclick="toggleCheckFromLabel(this)">Pernah melahirkan dengan tarikan vakum/forceps</div>
+                <span class="score-badge">4</span>
+            </div>
+
+            <div class="checkbox-item">
+                <input type="checkbox" data-score="4" onchange="handleCheckboxChange(this)">
+                <div class="checkbox-label" onclick="toggleCheckFromLabel(this)">Pernah melahirkan dengan operasi sesar</div>
+                <span class="score-badge">4</span>
+            </div>
+        </div>
+
+        <div class="section-title">Kelompok Faktor Risiko II</div>
+        <div class="risk-group">
+            <div class="group-header">
+                <i class="fas fa-heartbeat"></i> Kondisi Medis & Kehamilan
+            </div>
+            
+            <div class="checkbox-item">
+                <input type="checkbox" data-score="4" onchange="handleCheckboxChange(this)">
+                <div class="checkbox-label" onclick="toggleCheckFromLabel(this)">Pernah melahirkan bayi dengan berat badan rendah < 2500 gram</div>
+                <span class="score-badge">4</span>
+            </div>
+
+            <div class="checkbox-item">
+                <input type="checkbox" data-score="4" onchange="handleCheckboxChange(this)">
+                <div class="checkbox-label" onclick="toggleCheckFromLabel(this)">Pernah melahirkan dengan cacat bawaan</div>
+                <span class="score-badge">4</span>
+            </div>
+
+            <div class="checkbox-item">
+                <input type="checkbox" data-score="4" onchange="handleCheckboxChange(this)">
+                <div class="checkbox-label" onclick="toggleCheckFromLabel(this)">Kurang gizi (anemia HB < 11 g)</div>
+                <span class="score-badge">4</span>
+            </div>
+
+            <div class="checkbox-item">
+                <input type="checkbox" data-score="4" onchange="handleCheckboxChange(this)">
+                <div class="checkbox-label" onclick="toggleCheckFromLabel(this)">Riwayat penyakit kronis (jantung, paru, ginjal, dll)</div>
+                <span class="score-badge">4</span>
+            </div>
+
+            <div class="checkbox-item">
+                <input type="checkbox" data-score="4" onchange="handleCheckboxChange(this)">
+                <div class="checkbox-label" onclick="toggleCheckFromLabel(this)">Riwayat kelainan obstetri pada kehamilan sebelumnya</div>
+                <span class="score-badge">4</span>
+            </div>
+
+            <div class="checkbox-item">
+                <input type="checkbox" data-score="4" onchange="handleCheckboxChange(this)">
+                <div class="checkbox-label" onclick="toggleCheckFromLabel(this)">Anak terkecil berumur < 2 tahun</div>
+                <span class="score-badge">4</span>
+            </div>
+
+            <div class="checkbox-item">
+                <input type="checkbox" data-score="4" onchange="handleCheckboxChange(this)">
+                <div class="checkbox-label" onclick="toggleCheckFromLabel(this)">Hamil kembar (gemelli)</div>
+                <span class="score-badge">4</span>
+            </div>
+
+            <div class="checkbox-item">
+                <input type="checkbox" data-score="4" onchange="handleCheckboxChange(this)">
+                <div class="checkbox-label" onclick="toggleCheckFromLabel(this)">Hamil kembar air (hidramnion)</div>
+                <span class="score-badge">4</span>
+            </div>
+
+            <div class="checkbox-item">
+                <input type="checkbox" data-score="4" onchange="handleCheckboxChange(this)">
+                <div class="checkbox-label" onclick="toggleCheckFromLabel(this)">Bayi mati dalam kandungan</div>
+                <span class="score-badge">4</span>
+            </div>
+
+            <div class="checkbox-item">
+                <input type="checkbox" data-score="4" onchange="handleCheckboxChange(this)">
+                <div class="checkbox-label" onclick="toggleCheckFromLabel(this)">Kehamilan lebih bulan</div>
+                <span class="score-badge">4</span>
+            </div>
+
+            <div class="checkbox-item">
+                <input type="checkbox" data-score="8" onchange="handleCheckboxChange(this)">
+                <div class="checkbox-label" onclick="toggleCheckFromLabel(this)">Letak sungsang</div>
+                <span class="score-badge">8</span>
+            </div>
+
+            <div class="checkbox-item">
+                <input type="checkbox" data-score="8" onchange="handleCheckboxChange(this)">
+                <div class="checkbox-label" onclick="toggleCheckFromLabel(this)">Letak lintang</div>
+                <span class="score-badge">8</span>
+            </div>
+        </div>
+
+        <div class="section-title">Kelompok Faktor Risiko III</div>
+        <div class="risk-group">
+            <div class="group-header">
+                <i class="fas fa-exclamation-triangle"></i> Komplikasi Serius
+            </div>
+            
+            <div class="checkbox-item">
+                <input type="checkbox" data-score="8" onchange="handleCheckboxChange(this)">
+                <div class="checkbox-label" onclick="toggleCheckFromLabel(this)">Perdarahan dalam kehamilan ini</div>
+                <span class="score-badge">8</span>
+            </div>
+
+            <div class="checkbox-item">
+                <input type="checkbox" data-score="8" onchange="handleCheckboxChange(this)">
+                <div class="checkbox-label" onclick="toggleCheckFromLabel(this)">Preeklampsia (tekanan darah tinggi dalam kehamilan)</div>
+                <span class="score-badge">8</span>
+            </div>
+
+            <div class="checkbox-item">
+                <input type="checkbox" data-score="8" onchange="handleCheckboxChange(this)">
+                <div class="checkbox-label" onclick="toggleCheckFromLabel(this)">Preeklampsia berat/kejang-kejang (eklampsia)</div>
+                <span class="score-badge">8</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="result-section">
+        <div class="total-score">
+            <span>Total Skor:</span>
+            <span class="score" id="totalScore">2</span>
+        </div>
+        <button class="check-btn" onclick="showResult()">
+            <i class="fas fa-clipboard-check"></i> Lihat Hasil & Rekomendasi
+        </button>
+    </div>
+
+    <div class="modal" id="resultModal">
+        <div class="modal-content">
+            <div class="modal-icon" id="modalIcon">
+                <i class="fas fa-heart"></i>
+            </div>
+            <h2 class="modal-title">Hasil Skrining</h2>
+            <div class="modal-score" id="modalScore">2</div>
+            <div class="modal-category" id="modalCategory">Risiko Rendah</div>
+            
+            <div class="recommendation">
+                <h4><i class="fas fa-clipboard-list"></i> Rekomendasi</h4>
+                <ul id="recommendationList">
+                </ul>
+            </div>
+
+            <button class="close-modal-btn" onclick="closeModal()">Tutup</button>
+            <button class="reset-btn" onclick="resetForm()">
+                <i class="fas fa-redo"></i> Mulai Ulang
+            </button>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <a href="index.html" class="nav-item">
+            <i class="fas fa-home"></i>
+            <span>Beranda</span>
+        </a>
+        <a href="#" class="nav-item">
+            <i class="fas fa-newspaper"></i>
+            <span>Artikel</span>
+        </a>
+        <a href="konsultasi.html" class="nav-item">
+            <i class="fas fa-comments"></i>
+            <span>Chat</span>
+        </a>
+        <a href="#" class="nav-item">
+            <i class="fas fa-user"></i>
+            <span>Profil</span>
+        </a>
+    </div>
+
+    <script>
+        let totalScore = 2;
+
+        function handleCheckboxChange(checkbox) {
+            const item = checkbox.closest('.checkbox-item');
+            if (checkbox.checked) {
+                item.classList.add('checked');
+            } else {
+                item.classList.remove('checked');
+            }
+            calculateTotal();
+        }
+
+        function toggleCheckFromLabel(labelElement) {
+            const item = labelElement.closest('.checkbox-item');
+            const checkbox = item.querySelector('input[type="checkbox"]');
+            if (checkbox.disabled) return;
+            
+            checkbox.checked = !checkbox.checked;
+            
+            if (checkbox.checked) {
+                item.classList.add('checked');
+            } else {
+                item.classList.remove('checked');
+            }
+            
+            calculateTotal();
+        }
+
+        function calculateTotal() {
+            totalScore = 2;
+            
+            document.querySelectorAll('input[type="checkbox"]:checked:not([disabled])').forEach(checkbox => {
+                totalScore += parseInt(checkbox.dataset.score);
+            });
+            
+            document.getElementById('totalScore').textContent = totalScore;
+        }
+
+        function showResult() {
+            const modal = document.getElementById('resultModal');
+            const modalIcon = document.getElementById('modalIcon');
+            const modalScore = document.getElementById('modalScore');
+            const modalCategory = document.getElementById('modalCategory');
+            const recommendationList = document.getElementById('recommendationList');
+            
+            modalScore.textContent = totalScore;
+            
+            let category, recommendations;
+            
+            if (totalScore >= 2 && totalScore <= 6) {
+                category = 'Risiko Rendah (KRR)';
+                modalIcon.className = 'modal-icon low-risk';
+                modalIcon.innerHTML = '<i class="fas fa-check-circle"></i>';
+                modalCategory.className = 'modal-category low-risk';
+                modalCategory.textContent = category;
+                recommendations = [
+                    'Ibu dapat melahirkan di Puskesmas atau Polindes',
+                    'Lakukan pemeriksaan kehamilan rutin minimal 4 kali (1-1-2)',
+                    'Konsumsi tablet tambah darah dan vitamin sesuai anjuran',
+                    'Jaga pola makan bergizi seimbang',
+                    'Istirahat yang cukup dan hindari stress',
+                    'Persiapkan persalinan dengan baik'
+                ];
+            } else if (totalScore >= 8 && totalScore <= 12) {
+                category = 'Risiko Tinggi (KRT)';
+                modalIcon.className = 'modal-icon medium-risk';
+                modalIcon.innerHTML = '<i class="fas fa-exclamation-circle"></i>';
+                modalCategory.className = 'modal-category medium-risk';
+                modalCategory.textContent = category;
+                recommendations = [
+                    'Ibu perlu melahirkan di Puskesmas PONED atau Rumah Sakit',
+                    'Diperlukan pemeriksaan lebih intensif oleh tenaga kesehatan',
+                    'Konsultasi dengan dokter spesialis kandungan',
+                    'Perhatikan tanda-tanda bahaya kehamilan',
+                    'Siapkan donor darah dan transportasi darurat',
+                    'Pertimbangkan untuk tinggal dekat fasilitas kesehatan menjelang persalinan'
+                ];
+            } else {
+                category = 'Risiko Sangat Tinggi (KRST)';
+                modalIcon.className = 'modal-icon high-risk';
+                modalIcon.innerHTML = '<i class="fas fa-times-circle"></i>';
+                modalCategory.className = 'modal-category high-risk';
+                modalCategory.textContent = category;
+                recommendations = [
+                    'IBU HARUS melahirkan di Rumah Sakit',
+                    'Segera konsultasi dengan dokter spesialis kandungan',
+                    'Pemeriksaan dan monitoring ketat sangat diperlukan',
+                    'Persiapkan biaya, donor darah, dan transportasi darurat',
+                    'Jika terjadi tanda bahaya segera ke Rumah Sakit',
+                    'Pertimbangkan rawat inap jika diperlukan',
+                    'Keluarga harus siap mendampingi kapan saja'
+                ];
+            }
+            
+            recommendationList.innerHTML = '';
+            recommendations.forEach(rec => {
+                const li = document.createElement('li');
+                li.textContent = rec;
+                recommendationList.appendChild(li);
+            });
+            
+            modal.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('resultModal');
+            modal.classList.remove('show');
+            document.body.style.overflow = 'auto';
+        }
+
+        function resetForm() {
+            document.querySelectorAll('input[type="checkbox"]:not([disabled])').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            
+            document.querySelectorAll('.checkbox-item').forEach(item => {
+                if (!item.querySelector('input[disabled]')) {
+                    item.classList.remove('checked');
+                }
+            });
+            
+            totalScore = 2;
+            document.getElementById('totalScore').textContent = totalScore;
+            closeModal();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        calculateTotal();
+    </script>
+</body>
+</html>

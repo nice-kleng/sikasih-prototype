@@ -1,0 +1,52 @@
+<?php
+
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\PendaftaranController;
+use App\Http\Controllers\DeteksiRisikoController;
+use App\Http\Controllers\KonsultasiController;
+use App\Http\Controllers\VideoController;
+use App\Http\Controllers\PerawatanController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RiwayatController;
+use App\Http\Controllers\ArtikelController;
+
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+*/
+
+// Halaman Utama
+Route::get('/', [HomeController::class, 'index'])->name('home');
+
+// Pendaftaran
+Route::get('/pendaftaran', [PendaftaranController::class, 'create'])->name('pendaftaran');
+Route::post('/pendaftaran', [PendaftaranController::class, 'store'])->name('pendaftaran.store');
+
+// Deteksi Risiko Kehamilan
+Route::get('/deteksi-risiko', [DeteksiRisikoController::class, 'index'])->name('deteksi-risiko');
+Route::post('/deteksi-risiko/hitung', [DeteksiRisikoController::class, 'hitung'])->name('deteksi-risiko.hitung');
+
+// Konsultasi
+Route::get('/konsultasi', [KonsultasiController::class, 'index'])->name('konsultasi');
+Route::post('/konsultasi/kirim', [KonsultasiController::class, 'kirim'])->name('konsultasi.kirim');
+
+// Video Edukasi
+Route::get('/video', [VideoController::class, 'index'])->name('video');
+
+// Perawatan Ibu Hamil
+Route::get('/perawatan', [PerawatanController::class, 'index'])->name('perawatan');
+
+// Profil
+Route::get('/profil', [ProfileController::class, 'index'])->name('profil');
+Route::get('/profil/edit', [ProfileController::class, 'edit'])->name('profil.edit');
+Route::put('/profil/update', [ProfileController::class, 'update'])->name('profil.update');
+
+// Riwayat Pemeriksaan
+Route::get('/profil/riwayat', [RiwayatController::class, 'index'])->name('profil.riwayat');
+Route::get('/profil/riwayat/{id}', [RiwayatController::class, 'show'])->name('profil.riwayat.show');
+
+// Artikel
+Route::get('/artikel', [ArtikelController::class, 'index'])->name('artikel');
+Route::get('/artikel/{id}', [ArtikelController::class, 'show'])->name('artikel.show');
