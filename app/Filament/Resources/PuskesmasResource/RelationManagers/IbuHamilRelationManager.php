@@ -220,7 +220,11 @@ class IbuHamilRelationManager extends RelationManager
                     ->successNotificationTitle('Ibu Hamil berhasil ditambahkan'),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
+                Tables\Actions\Action::make('view')
+                    ->label('Lihat Detail')
+                    ->icon('heroicon-o-eye')
+                    ->url(fn($record) => \App\Filament\Resources\IbuHamilResource::getUrl('view', ['record' => $record]))
+                    ->color('info'),
                 Tables\Actions\EditAction::make()
                     ->successNotificationTitle('Data Ibu Hamil berhasil diperbarui'),
                 Tables\Actions\DeleteAction::make()

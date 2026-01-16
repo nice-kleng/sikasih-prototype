@@ -18,6 +18,10 @@ class DeteksiRisikoRelationManager extends RelationManager
 
     protected static ?string $title = 'Riwayat Deteksi Risiko';
 
+    protected static ?string $modelLabel = 'Deteksi Risiko';
+
+    protected static ?string $pluralModelLabel = 'Riwayat Deteksi Risiko';
+
     protected static ?string $recordTitleAttribute = 'waktu_deteksi';
 
     public function table(Table $table): Table
@@ -28,19 +32,27 @@ class DeteksiRisikoRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('waktu_deteksi')
                     ->label('Waktu Deteksi')
                     ->dateTime('d/m/Y H:i')
-                    ->sortable(),
+                    ->sortable()
+                    ->searchable()
+                    ->icon('heroicon-m-calendar'),
 
                 Tables\Columns\TextColumn::make('dataReproduksi.jumlah_kehamilan')
                     ->label('Kehamilan Ke')
-                    ->default('-'),
+                    ->default('-')
+                    ->alignCenter()
+                    ->toggleable(),
 
                 Tables\Columns\TextColumn::make('dataReproduksi.jumlah_persalinan')
                     ->label('Jumlah Persalinan')
-                    ->default('-'),
+                    ->default('-')
+                    ->alignCenter()
+                    ->toggleable(),
 
                 Tables\Columns\TextColumn::make('dataReproduksi.jumlah_anak_hidup')
                     ->label('Anak Hidup')
-                    ->default('-'),
+                    ->default('-')
+                    ->alignCenter()
+                    ->toggleable(),
 
                 Tables\Columns\TextColumn::make('total_skor')
                     ->label('Total Skor')
@@ -51,7 +63,8 @@ class DeteksiRisikoRelationManager extends RelationManager
                         $state >= 6 && $state < 12 => 'danger',
                         default => 'gray',
                     })
-                    ->sortable(),
+                    ->sortable()
+                    ->alignCenter(),
 
                 Tables\Columns\TextColumn::make('kategori')
                     ->label('Kategori Risiko')
@@ -61,7 +74,21 @@ class DeteksiRisikoRelationManager extends RelationManager
                         'KRT (Kehamilan Risiko Tinggi)' => 'warning',
                         'KRST (Kehamilan Risiko Sangat Tinggi)' => 'danger',
                         default => 'gray',
-                    }),
+                    })
+                    ->formatStateUsing(fn(string $state): string => match ($state) {
+                        'KRR (Kehamilan Risiko Rendah)' => 'KRR',
+                        'KRT (Kehamilan Risiko Tinggi)' => 'KRT',
+                        'KRST (Kehamilan Risiko Sangat Tinggi)' => 'KRST',
+                        default => $state,
+                    })
+                    ->searchable()
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('puskesmas.nama_puskesmas')
+                    ->label('Puskesmas')
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->defaultSort('waktu_deteksi', 'desc')
             ->filters([
@@ -71,7 +98,42 @@ class DeteksiRisikoRelationManager extends RelationManager
                         'KRR (Kehamilan Risiko Rendah)' => 'KRR',
                         'KRT (Kehamilan Risiko Tinggi)' => 'KRT',
                         'KRST (Kehamilan Risiko Sangat Tinggi)' => 'KRST',
-                    ]),
+                    ])
+                    ->multiple(),
+                Tables\Filters\Filter::make('skor_tinggi')
+                    ->label('Skor Tinggi (≥ 6)')
+                    ->query(fn(Builder $query): Builder => $query->where('total_skor', '>=', 6))
+                    ->toggle(),
+                Tables\Filters\Filter::make('created_at')
+                    ->form([
+                        Forms\Components\DatePicker::make('dari_tanggal')
+                            ->label('Dari Tanggal')
+                            ->native(false),
+                        Forms\Components\DatePicker::make('sampai_tanggal')
+                            ->label('Sampai Tanggal')
+                            ->native(false),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['dari_tanggal'],
+                                fn(Builder $query, $date): Builder => $query->whereDate('waktu_deteksi', '>=', $date),
+                            )
+                            ->when(
+                                $data['sampai_tanggal'],
+                                fn(Builder $query, $date): Builder => $query->whereDate('waktu_deteksi', '<=', $date),
+                            );
+                    })
+                    ->indicateUsing(function (array $data): array {
+                        $indicators = [];
+                        if ($data['dari_tanggal'] ?? null) {
+                            $indicators[] = 'Dari: ' . \Carbon\Carbon::parse($data['dari_tanggal'])->format('d/m/Y');
+                        }
+                        if ($data['sampai_tanggal'] ?? null) {
+                            $indicators[] = 'Sampai: ' . \Carbon\Carbon::parse($data['sampai_tanggal'])->format('d/m/Y');
+                        }
+                        return $indicators;
+                    }),
             ])
             ->headerActions([
                 // Bisa ditambahkan action create jika diperlukan
@@ -79,6 +141,7 @@ class DeteksiRisikoRelationManager extends RelationManager
             ->actions([
                 Tables\Actions\ViewAction::make()
                     ->label('Detail')
+                    ->icon('heroicon-o-eye')
                     ->modalHeading('Detail Pemeriksaan Risiko Kehamilan')
                     ->modalWidth('5xl')
                     ->infolist([
@@ -86,10 +149,12 @@ class DeteksiRisikoRelationManager extends RelationManager
                             ->schema([
                                 Infolists\Components\TextEntry::make('waktu_deteksi')
                                     ->label('Waktu Deteksi')
-                                    ->dateTime('d/m/Y H:i'),
+                                    ->dateTime('d F Y, H:i')
+                                    ->icon('heroicon-m-calendar'),
                                 Infolists\Components\TextEntry::make('total_skor')
                                     ->label('Total Skor')
                                     ->badge()
+                                    ->size('lg')
                                     ->color(fn(string $state): string => match (true) {
                                         $state < 2 => 'success',
                                         $state >= 2 && $state < 6 => 'warning',
@@ -99,6 +164,7 @@ class DeteksiRisikoRelationManager extends RelationManager
                                 Infolists\Components\TextEntry::make('kategori')
                                     ->label('Kategori Risiko')
                                     ->badge()
+                                    ->size('lg')
                                     ->color(fn(string $state): string => match ($state) {
                                         'KRR (Kehamilan Risiko Rendah)' => 'success',
                                         'KRT (Kehamilan Risiko Tinggi)' => 'warning',
@@ -140,168 +206,45 @@ class DeteksiRisikoRelationManager extends RelationManager
 
                         Infolists\Components\Section::make('Faktor Risiko Terdeteksi')
                             ->schema([
-                                Infolists\Components\Grid::make(2)
-                                    ->schema([
-                                        // Faktor Risiko 4 Poin
-                                        Infolists\Components\TextEntry::make('eklampsia')
-                                            ->label('Eklampsia')
-                                            ->badge()
-                                            ->color('danger')
-                                            ->formatStateUsing(fn($state) => $state ? '✓ Ya (4 poin)' : '✗ Tidak')
-                                            ->visible(fn($record) => $record->eklampsia),
-
-                                        // Faktor Risiko 8 Poin
-                                        Infolists\Components\TextEntry::make('perdarahan_dalam_kehamilan_ini')
-                                            ->label('Perdarahan Dalam Kehamilan')
-                                            ->badge()
-                                            ->color('danger')
-                                            ->formatStateUsing(fn($state) => $state ? '✓ Ya (8 poin)' : '✗ Tidak')
-                                            ->visible(fn($record) => $record->perdarahan_dalam_kehamilan_ini),
-
-                                        Infolists\Components\TextEntry::make('preeklampsia')
-                                            ->label('Preeklampsia / Hipertensi')
-                                            ->badge()
-                                            ->color('danger')
-                                            ->formatStateUsing(fn($state) => $state ? '✓ Ya (8 poin)' : '✗ Tidak')
-                                            ->visible(fn($record) => $record->preeklampsia),
-
-                                        Infolists\Components\TextEntry::make('hamil_kembar')
-                                            ->label('Hamil Kembar')
-                                            ->badge()
-                                            ->color('danger')
-                                            ->formatStateUsing(fn($state) => $state ? '✓ Ya (8 poin)' : '✗ Tidak')
-                                            ->visible(fn($record) => $record->hamil_kembar),
-
-                                        Infolists\Components\TextEntry::make('hidramnion')
-                                            ->label('Hidramnion')
-                                            ->badge()
-                                            ->color('danger')
-                                            ->formatStateUsing(fn($state) => $state ? '✓ Ya (8 poin)' : '✗ Tidak')
-                                            ->visible(fn($record) => $record->hidramnion),
-
-                                        Infolists\Components\TextEntry::make('bayi_mati_dalam_kandungan')
-                                            ->label('Bayi Mati Dalam Kandungan')
-                                            ->badge()
-                                            ->color('danger')
-                                            ->formatStateUsing(fn($state) => $state ? '✓ Ya (8 poin)' : '✗ Tidak')
-                                            ->visible(fn($record) => $record->bayi_mati_dalam_kandungan),
-
-                                        Infolists\Components\TextEntry::make('kehamilan_lebih_bulan')
-                                            ->label('Kehamilan Lebih Bulan')
-                                            ->badge()
-                                            ->color('danger')
-                                            ->formatStateUsing(fn($state) => $state ? '✓ Ya (8 poin)' : '✗ Tidak')
-                                            ->visible(fn($record) => $record->kehamilan_lebih_bulan),
-
-                                        Infolists\Components\TextEntry::make('letak_sungsang')
-                                            ->label('Letak Sungsang')
-                                            ->badge()
-                                            ->color('danger')
-                                            ->formatStateUsing(fn($state) => $state ? '✓ Ya (8 poin)' : '✗ Tidak')
-                                            ->visible(fn($record) => $record->letak_sungsang),
-
-                                        Infolists\Components\TextEntry::make('letak_lintang')
-                                            ->label('Letak Lintang')
-                                            ->badge()
-                                            ->color('danger')
-                                            ->formatStateUsing(fn($state) => $state ? '✓ Ya (8 poin)' : '✗ Tidak')
-                                            ->visible(fn($record) => $record->letak_lintang),
-
-                                        // Faktor Risiko 4 Poin
-                                        Infolists\Components\TextEntry::make('primigravida_terlalu_muda')
-                                            ->label('Primigravida Terlalu Muda (< 16 tahun)')
-                                            ->badge()
-                                            ->color('warning')
-                                            ->formatStateUsing(fn($state) => $state ? '✓ Ya (4 poin)' : '✗ Tidak')
-                                            ->visible(fn($record) => $record->primigravida_terlalu_muda),
-
-                                        Infolists\Components\TextEntry::make('primigravida_terlalu_tua')
-                                            ->label('Primigravida Terlalu Tua (> 35 tahun)')
-                                            ->badge()
-                                            ->color('warning')
-                                            ->formatStateUsing(fn($state) => $state ? '✓ Ya (4 poin)' : '✗ Tidak')
-                                            ->visible(fn($record) => $record->primigravida_terlalu_tua),
-
-                                        Infolists\Components\TextEntry::make('primigravida_tua_sekunder')
-                                            ->label('Primigravida Tua Sekunder')
-                                            ->badge()
-                                            ->color('warning')
-                                            ->formatStateUsing(fn($state) => $state ? '✓ Ya (4 poin)' : '✗ Tidak')
-                                            ->visible(fn($record) => $record->primigravida_tua_sekunder),
-
-                                        Infolists\Components\TextEntry::make('tinggi_badan_kurang_atau_sama_145')
-                                            ->label('Tinggi Badan ≤ 145 cm')
-                                            ->badge()
-                                            ->color('warning')
-                                            ->formatStateUsing(fn($state) => $state ? '✓ Ya (4 poin)' : '✗ Tidak')
-                                            ->visible(fn($record) => $record->tinggi_badan_kurang_atau_sama_145),
-
-                                        Infolists\Components\TextEntry::make('pernah_gagal_kehamilan')
-                                            ->label('Pernah Gagal Kehamilan')
-                                            ->badge()
-                                            ->color('warning')
-                                            ->formatStateUsing(fn($state) => $state ? '✓ Ya (4 poin)' : '✗ Tidak')
-                                            ->visible(fn($record) => $record->pernah_gagal_kehamilan),
-
-                                        Infolists\Components\TextEntry::make('pernah_vakum_atau_forceps')
-                                            ->label('Pernah Melahirkan dengan Vakum/Forceps')
-                                            ->badge()
-                                            ->color('warning')
-                                            ->formatStateUsing(fn($state) => $state ? '✓ Ya (4 poin)' : '✗ Tidak')
-                                            ->visible(fn($record) => $record->pernah_vakum_atau_forceps),
-
-                                        Infolists\Components\TextEntry::make('pernah_operasi_sesar')
-                                            ->label('Pernah Operasi Sesar')
-                                            ->badge()
-                                            ->color('warning')
-                                            ->formatStateUsing(fn($state) => $state ? '✓ Ya (4 poin)' : '✗ Tidak')
-                                            ->visible(fn($record) => $record->pernah_operasi_sesar),
-
-                                        Infolists\Components\TextEntry::make('pernah_melahirkan_bblr')
-                                            ->label('Pernah Melahirkan BBLR')
-                                            ->badge()
-                                            ->color('warning')
-                                            ->formatStateUsing(fn($state) => $state ? '✓ Ya (4 poin)' : '✗ Tidak')
-                                            ->visible(fn($record) => $record->pernah_melahirkan_bblr),
-
-                                        Infolists\Components\TextEntry::make('pernah_melahirkan_cacat_bawaan')
-                                            ->label('Pernah Melahirkan Bayi Cacat')
-                                            ->badge()
-                                            ->color('warning')
-                                            ->formatStateUsing(fn($state) => $state ? '✓ Ya (4 poin)' : '✗ Tidak')
-                                            ->visible(fn($record) => $record->pernah_melahirkan_cacat_bawaan),
-
-                                        Infolists\Components\TextEntry::make('anak_terkecil_kurang_2_tahun')
-                                            ->label('Anak Terkecil < 2 Tahun')
-                                            ->badge()
-                                            ->color('warning')
-                                            ->formatStateUsing(fn($state) => $state ? '✓ Ya (4 poin)' : '✗ Tidak')
-                                            ->visible(fn($record) => $record->anak_terkecil_kurang_2_tahun),
-
-                                        Infolists\Components\TextEntry::make('riwayat_kelainan_obstetri_sebelumnya')
-                                            ->label('Riwayat Kelainan Obstetri')
-                                            ->badge()
-                                            ->color('warning')
-                                            ->formatStateUsing(fn($state) => $state ? '✓ Ya (4 poin)' : '✗ Tidak')
-                                            ->visible(fn($record) => $record->riwayat_kelainan_obstetri_sebelumnya),
-
-                                        // Faktor Risiko 4 Poin (Lanjutan)
-                                        Infolists\Components\TextEntry::make('anemia_hb_kurang_11')
-                                            ->label('Anemia (HB < 11 g%)')
-                                            ->badge()
-                                            ->color('warning')
-                                            ->formatStateUsing(fn($state) => $state ? '✓ Ya (4 poin)' : '✗ Tidak')
-                                            ->visible(fn($record) => $record->anemia_hb_kurang_11),
-
-                                        Infolists\Components\TextEntry::make('riwayat_penyakit_kronis')
-                                            ->label('Riwayat Penyakit Kronis')
-                                            ->badge()
-                                            ->color('warning')
-                                            ->formatStateUsing(fn($state) => $state ? '✓ Ya (4 poin)' : '✗ Tidak')
-                                            ->visible(fn($record) => $record->riwayat_penyakit_kronis),
+                                Infolists\Components\ViewEntry::make('faktor_risiko')
+                                    ->label('')
+                                    ->view('filament.infolists.entries.faktor-risiko-grid')
+                                    ->viewData(fn($record) => [
+                                        'record' => $record,
+                                        'faktors' => [
+                                            // Faktor 8 Poin (Merah - Bahaya)
+                                            'danger' => [
+                                                ['field' => 'perdarahan_dalam_kehamilan_ini', 'label' => 'Perdarahan Dalam Kehamilan', 'poin' => 8],
+                                                ['field' => 'preeklampsia', 'label' => 'Preeklampsia / Hipertensi', 'poin' => 8],
+                                                ['field' => 'hamil_kembar', 'label' => 'Hamil Kembar', 'poin' => 8],
+                                                ['field' => 'hidramnion', 'label' => 'Hidramnion', 'poin' => 8],
+                                                ['field' => 'bayi_mati_dalam_kandungan', 'label' => 'Bayi Mati Dalam Kandungan', 'poin' => 8],
+                                                ['field' => 'kehamilan_lebih_bulan', 'label' => 'Kehamilan Lebih Bulan', 'poin' => 8],
+                                                ['field' => 'letak_sungsang', 'label' => 'Letak Sungsang', 'poin' => 8],
+                                                ['field' => 'letak_lintang', 'label' => 'Letak Lintang', 'poin' => 8],
+                                                ['field' => 'eklampsia', 'label' => 'Eklampsia', 'poin' => 4],
+                                            ],
+                                            // Faktor 4 Poin (Kuning - Peringatan)
+                                            'warning' => [
+                                                ['field' => 'primigravida_terlalu_muda', 'label' => 'Primigravida Terlalu Muda (< 16 tahun)', 'poin' => 4],
+                                                ['field' => 'primigravida_terlalu_tua', 'label' => 'Primigravida Terlalu Tua (> 35 tahun)', 'poin' => 4],
+                                                ['field' => 'primigravida_tua_sekunder', 'label' => 'Primigravida Tua Sekunder', 'poin' => 4],
+                                                ['field' => 'tinggi_badan_kurang_atau_sama_145', 'label' => 'Tinggi Badan ≤ 145 cm', 'poin' => 4],
+                                                ['field' => 'pernah_gagal_kehamilan', 'label' => 'Pernah Gagal Kehamilan', 'poin' => 4],
+                                                ['field' => 'pernah_vakum_atau_forceps', 'label' => 'Pernah Melahirkan dengan Vakum/Forceps', 'poin' => 4],
+                                                ['field' => 'pernah_operasi_sesar', 'label' => 'Pernah Operasi Sesar', 'poin' => 4],
+                                                ['field' => 'pernah_melahirkan_bblr', 'label' => 'Pernah Melahirkan BBLR', 'poin' => 4],
+                                                ['field' => 'pernah_melahirkan_cacat_bawaan', 'label' => 'Pernah Melahirkan Bayi Cacat', 'poin' => 4],
+                                                ['field' => 'anak_terkecil_kurang_2_tahun', 'label' => 'Anak Terkecil < 2 Tahun', 'poin' => 4],
+                                                ['field' => 'riwayat_kelainan_obstetri_sebelumnya', 'label' => 'Riwayat Kelainan Obstetri', 'poin' => 4],
+                                                ['field' => 'anemia_hb_kurang_11', 'label' => 'Anemia (HB < 11 g%)', 'poin' => 4],
+                                                ['field' => 'riwayat_penyakit_kronis', 'label' => 'Riwayat Penyakit Kronis', 'poin' => 4],
+                                            ],
+                                        ],
                                     ]),
                             ])
-                            ->collapsible(),
+                            ->collapsible()
+                            ->collapsed(false),
 
                         Infolists\Components\Section::make('Rekomendasi')
                             ->schema([
@@ -309,13 +252,37 @@ class DeteksiRisikoRelationManager extends RelationManager
                                     ->label('')
                                     ->listWithLineBreaks()
                                     ->bulleted()
-                                    ->color('primary'),
+                                    ->color('primary')
+                                    ->icon('heroicon-m-light-bulb'),
                             ])
                             ->collapsed(false),
+
+                        Infolists\Components\Section::make('Informasi Tambahan')
+                            ->schema([
+                                Infolists\Components\TextEntry::make('puskesmas.nama_puskesmas')
+                                    ->label('Puskesmas')
+                                    ->icon('heroicon-m-building-office-2'),
+                                Infolists\Components\TextEntry::make('created_at')
+                                    ->label('Dicatat Pada')
+                                    ->dateTime('d F Y, H:i')
+                                    ->icon('heroicon-m-clock'),
+                            ])
+                            ->columns(2)
+                            ->collapsed(),
                     ]),
             ])
             ->bulkActions([
-                // Bisa ditambahkan bulk actions jika diperlukan
-            ]);
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->requiresConfirmation(),
+                ]),
+            ])
+            ->emptyStateHeading('Belum ada riwayat deteksi risiko')
+            ->emptyStateDescription('Riwayat deteksi risiko akan muncul di sini setelah dilakukan pemeriksaan.')
+            ->emptyStateIcon('heroicon-o-clipboard-document-list')
+            ->striped()
+            ->persistFiltersInSession()
+            ->persistSearchInSession()
+            ->persistSortInSession();
     }
 }

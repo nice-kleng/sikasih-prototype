@@ -14,6 +14,11 @@ class ViewIbuHamil extends ViewRecord
     {
         return [
             Actions\EditAction::make(),
+            Actions\Action::make('kembali')
+                ->label('Kembali')
+                ->url(fn() => url()->previous())
+                ->icon('heroicon-o-arrow-left')
+                ->color('gray'),
         ];
     }
 }
