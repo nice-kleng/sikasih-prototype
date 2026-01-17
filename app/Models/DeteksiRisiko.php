@@ -78,4 +78,9 @@ class DeteksiRisiko extends Model
     {
         return $this->hasOne(DataReproduksi::class, 'deteksi_risiko_id');
     }
+
+    public function puskesmas()
+    {
+        return $this->belongsTo(Puskesmas::class, 'puskesmas_id');
+    }
 }
