@@ -11,35 +11,34 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('artikels', function (Blueprint $table) {
+        Schema::create('videos', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('penulis_id')->nullable()->constrained('users')->onDelete('set null');
             $table->string('judul');
             $table->string('slug')->unique();
-            $table->text('excerpt');
-            $table->longText('konten');
-            $table->string('gambar_utama')->nullable();
+            $table->text('deskripsi')->nullable();
+            $table->string('youtube_id'); // ID video YouTube
+            $table->string('thumbnail')->nullable();
             $table->enum('kategori', [
-                'nutrisi',
-                'olahraga',
+                'persiapan_kehamilan',
                 'perkembangan_janin',
-                'tanda_bahaya',
+                'senam_hamil',
+                'nutrisi',
                 'persiapan_persalinan',
-                'tips_kehamilan',
-                'kesehatan_ibu',
+                'perawatan_bayi',
                 'lainnya'
             ]);
-            $table->string('tags')->nullable(); // Comma separated tags
+            $table->integer('durasi_detik')->nullable();
             $table->integer('views')->default(0);
-            $table->enum('status', ['draft', 'published', 'archived'])->default('draft');
+            $table->integer('urutan')->default(0); // Untuk sorting
+            $table->enum('status', ['archived', 'draft', 'published'])->default('draft');
             $table->timestamp('published_at')->nullable();
             $table->timestamps();
             $table->softDeletes();
 
             // Indexes
             $table->index('status');
-            $table->index('published_at');
             $table->index('kategori');
+            $table->index('urutan');
         });
     }
 
@@ -48,6 +47,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('artikels');
+        Schema::dropIfExists('videos');
     }
 };

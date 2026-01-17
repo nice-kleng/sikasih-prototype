@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\DeteksiRisikoController;
+use App\Http\Controllers\EdukasiController;
 use App\Http\Controllers\Frontend\DashboardController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
@@ -47,10 +48,6 @@ Route::middleware(['auth:web', 'ibu_hamil'])->group(function () {
     // Konsultasi
     Route::get('/konsultasi', [DashboardController::class, 'konsultasi'])->name('konsultasi');
 
-    // Artikel
-    Route::get('/artikel', [DashboardController::class, 'artikel'])->name('artikel');
-    Route::get('/artikel/{id}', [DashboardController::class, 'artikelDetail'])->name('artikel.detail');
-
     // Konsultasi Store
     Route::post('/konsultasi', [DashboardController::class, 'konsultasiStore'])->name('konsultasi.store');
 
@@ -64,8 +61,12 @@ Route::middleware(['auth:web', 'ibu_hamil'])->group(function () {
     // Jadwal Pemeriksaan
     Route::get('/jadwal', [DashboardController::class, 'jadwal'])->name('jadwal');
 
-    // Video Pemeriksaan
-    Route::get('/video', [DashboardController::class, 'video'])->name('video');
+    // Edukasi Artikel & video
+    Route::get('edukasi', [EdukasiController::class, 'index'])->name('edukasi');
+    // Route::get('artikel', [EdukasiController::class, 'artikelIndex'])->name('artikel.index');
+    Route::get('artikel/{slug}', [EdukasiController::class, 'showArtikel'])->name('artikel.show');
+    // Route::get('video', [EdukasiController::class, 'videoIndex'])->name('video.index');
+    Route::get('video/{slug}', [EdukasiController::class, 'showVideo'])->name('video.show');
 });
 
 // Filament akan otomatis handle routes untuk admin panel di /admin

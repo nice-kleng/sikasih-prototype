@@ -110,5 +110,10 @@ class DatabaseSeeder extends Seeder
             'pekerjaan' => 'Pegawai Swasta',
             'is_has_bpjs' => 'Ya',
         ]);
+
+        $this->call([
+            ArtikelSeeder::class,
+            VideoSeeder::class,
+        ]);
     }
 }

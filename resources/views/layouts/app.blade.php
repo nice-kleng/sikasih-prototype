@@ -139,6 +139,21 @@
             color: white;
         }
 
+        .btn-outline-primary {
+            color: #ff6b9d;
+            border: 2px solid #ff6b9d;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-outline-primary:hover {
+            background: #ff6b9d;
+            border-color: #ff6b9d;
+            color: white;
+        }
+
         .section-title {
             color: #ff6b9d;
             font-size: 18px;
