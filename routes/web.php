@@ -67,6 +67,11 @@ Route::middleware(['auth:web', 'ibu_hamil'])->group(function () {
     Route::get('artikel/{slug}', [EdukasiController::class, 'showArtikel'])->name('artikel.show');
     // Route::get('video', [EdukasiController::class, 'videoIndex'])->name('video.index');
     Route::get('video/{slug}', [EdukasiController::class, 'showVideo'])->name('video.show');
+
+    // Route maintenance
+    Route::get('/under-development', function () {
+        return view('pages.under-development');
+    })->name('under-development');
 });
 
 // Filament akan otomatis handle routes untuk admin panel di /admin

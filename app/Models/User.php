@@ -78,6 +78,11 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasRole('puskesmas');
     }
 
+    public function puskesmas()
+    {
+        return $this->hasOne(Puskesmas::class, 'user_id');
+    }
+
     public function canAccessPanel(Panel $panel): bool
     {
         return $this->isAdmin() || $this->isPuskesmas();

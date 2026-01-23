@@ -440,6 +440,23 @@
                 </h2>
 
                 <div class="form-group">
+                    <label class="form-label">Puskesmas Terdaftar <span class="required">*</span></label>
+                    <select name="puskesmas_id" class="form-control @error('puskesmas_id') is-invalid @enderror"
+                        required>
+                        <option value="">Pilih Puskesmas</option>
+                        @foreach ($puskesmas as $item)
+                            <option value="{{ $item->id }}"
+                                {{ old('puskesmas_id') == $item->id ? 'selected' : '' }}>
+                                {{ $item->nama_puskesmas }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('puskesmas_id')
+                        <span class="invalid-feedback">{{ $message }}</span>
+                    @enderror
+                </div>
+
+                <div class="form-group">
                     <label class="form-label">Nama Lengkap <span class="required">*</span></label>
                     <input type="text" name="nama_lengkap"
                         class="form-control @error('nama_lengkap') is-invalid @enderror" placeholder="Nama lengkap ibu"

@@ -159,7 +159,7 @@ class DeteksiRisikoController extends Controller
     {
         if ($totalSkor >= 2 && $totalSkor <= 6) {
             return [
-                'Risiko Rendah (KRR)',
+                'Kehamilan Risiko Rendah (KRR)',
                 [
                     'Ibu dapat melahirkan di Puskesmas atau Polindes',
                     'Lakukan pemeriksaan kehamilan rutin minimal 4 kali (1-1-2)',
@@ -173,7 +173,7 @@ class DeteksiRisikoController extends Controller
 
         if ($totalSkor >= 8 && $totalSkor <= 12) {
             return [
-                'Risiko Tinggi (KRT)',
+                'Kehamilan Risiko Tinggi (KRT)',
                 [
                     'Ibu perlu melahirkan di Puskesmas PONED atau Rumah Sakit',
                     'Diperlukan pemeriksaan lebih intensif oleh tenaga kesehatan',
@@ -186,7 +186,7 @@ class DeteksiRisikoController extends Controller
         }
 
         return [
-            'Risiko Sangat Tinggi (KRST)',
+            'Kehamilan Risiko Sangat Tinggi (KRST)',
             [
                 'IBU HARUS melahirkan di Rumah Sakit',
                 'Segera konsultasi dengan dokter spesialis kandungan',

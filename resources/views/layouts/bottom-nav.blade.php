@@ -7,7 +7,8 @@
         <i class="fas fa-book-open"></i>
         <span>Artikel</span>
     </a>
-    <a href="{{ route('konsultasi') }}" class="nav-item {{ Request::routeIs('konsultasi') ? 'active' : '' }}">
+    <a href="{{ route('under-development') }}"
+        class="nav-item {{ Request::routeIs('under-development') ? 'active' : '' }}">
         <i class="fas fa-comments"></i>
         <span>Chat</span>
     </a>

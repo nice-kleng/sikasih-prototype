@@ -7,7 +7,7 @@ use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Support\Facades\Auth;
 
-class DeteksiRisikoStatsWidget extends BaseWidget
+class StatsOverview extends BaseWidget
 {
     protected function getStats(): array
     {
@@ -40,6 +40,12 @@ class DeteksiRisikoStatsWidget extends BaseWidget
         $persentasePerubahan = $bulanLalu > 0
             ? round((($bulanIni - $bulanLalu) / $bulanLalu) * 100, 1)
             : 0;
+
+        // Hitung rata-rata skor untuk stat terakhir
+        $avgSkor = (clone $query)->avg('total_skor');
+        $avgSkorRounded = $avgSkor ? round($avgSkor, 2) : 0;
+        $riskDescription = $this->getRiskCategoryDescription($avgSkor);
+        $riskColor = $this->getRiskColor($avgSkor);
 
         return [
             Stat::make('Total Deteksi Risiko', $totalDeteksi)
@@ -78,33 +84,40 @@ class DeteksiRisikoStatsWidget extends BaseWidget
                 ->color($persentasePerubahan > 0 ? 'success' : ($persentasePerubahan < 0 ? 'danger' : 'gray'))
                 ->chart(array_map(fn() => rand(0, 30), range(1, 7))),
 
-            Stat::make('Rata-rata Skor Risiko', function () use ($query) {
-                $avgSkor = (clone $query)->avg('total_skor');
-                return $avgSkor ? round($avgSkor, 2) : '0';
-            })
-                ->description(function () use ($query) {
-                    $avgSkor = (clone $query)->avg('total_skor');
-                    if ($avgSkor < 2) {
-                        return 'Kategori Risiko Rendah';
-                    } elseif ($avgSkor < 6) {
-                        return 'Kategori Risiko Tinggi';
-                    } else {
-                        return 'Kategori Risiko Sangat Tinggi';
-                    }
-                })
+            Stat::make('Rata-rata Skor Risiko', $avgSkorRounded)
+                ->description($riskDescription)
                 ->descriptionIcon('heroicon-m-calculator')
-                ->color(function () use ($query) {
-                    $avgSkor = (clone $query)->avg('total_skor');
-                    if ($avgSkor < 2) {
-                        return 'success';
-                    } elseif ($avgSkor < 6) {
-                        return 'warning';
-                    } else {
-                        return 'danger';
-                    }
-                })
+                ->color($riskColor)
                 ->chart([3, 4, 3, 5, 4, 6, 5]),
         ];
+    }
+
+    /**
+     * Helper function to get risk category description
+     */
+    protected function getRiskCategoryDescription($avgSkor): string
+    {
+        if (!$avgSkor || $avgSkor < 2) {
+            return 'Kategori Risiko Rendah';
+        } elseif ($avgSkor < 6) {
+            return 'Kategori Risiko Tinggi';
+        } else {
+            return 'Kategori Risiko Sangat Tinggi';
+        }
+    }
+
+    /**
+     * Helper function to get risk color
+     */
+    protected function getRiskColor($avgSkor): string
+    {
+        if (!$avgSkor || $avgSkor < 2) {
+            return 'success';
+        } elseif ($avgSkor < 6) {
+            return 'warning';
+        } else {
+            return 'danger';
+        }
     }
 
     protected static ?string $pollingInterval = null;

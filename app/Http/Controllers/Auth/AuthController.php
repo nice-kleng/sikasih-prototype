@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\IbuHamil;
 use App\Models\DataSuami;
 use App\Models\DataReproduksi;
+use App\Models\Puskesmas;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -77,8 +78,9 @@ class AuthController extends Controller
         if (Auth::check()) {
             return redirect('/dashboard');
         }
+        $puskesmas = Puskesmas::select('id', 'nama_puskesmas')->orderBy('nama_puskesmas')->get();
 
-        return view('auth.register');
+        return view('auth.register', compact('puskesmas'));
     }
 
     /**
@@ -91,6 +93,7 @@ class AuthController extends Controller
             // Data Akun
             'email' => ['required', 'email', 'unique:users,email'],
             'password' => ['required', 'confirmed', Password::min(8)],
+            'puskesmas_id' => ['required', 'exists:puskesmas,id'],
 
             // Data Pribadi Ibu
             'nama_lengkap' => ['required', 'string', 'max:255'],
@@ -111,17 +114,18 @@ class AuthController extends Controller
             'pendidikan_suami' => ['nullable', 'string'],
             'pekerjaan_suami' => ['required', 'string', 'max:100'],
             'is_has_bpjs' => ['nullable', 'boolean'],
+            'golongan_darah' => ['nullable', 'in:A,B,AB,O,Tidak Tahu'],
 
             // Data Reproduksi
-            'usia_menikah' => ['nullable', 'integer', 'min:16', 'max:50'],
-            'usia_hamil_pertama' => ['nullable', 'integer', 'min:16', 'max:50'],
-            'gravida' => ['required', 'integer', 'min:1', 'max:20'],
-            'para' => ['required', 'integer', 'min:0', 'max:20'],
-            'anak_hidup' => ['nullable', 'integer', 'min:0', 'max:20'],
-            'keguguran' => ['nullable', 'integer', 'min:0', 'max:10'],
-            'riwayat_persalinan' => ['nullable', 'string'],
-            'jarak_kehamilan' => ['nullable', 'string', 'max:100'],
-            'riwayat_komplikasi' => ['nullable', 'string'],
+            // 'usia_menikah' => ['nullable', 'integer', 'min:16', 'max:50'],
+            // 'usia_hamil_pertama' => ['nullable', 'integer', 'min:16', 'max:50'],
+            // 'gravida' => ['required', 'integer', 'min:1', 'max:20'],
+            // 'para' => ['required', 'integer', 'min:0', 'max:20'],
+            // 'anak_hidup' => ['nullable', 'integer', 'min:0', 'max:20'],
+            // 'keguguran' => ['nullable', 'integer', 'min:0', 'max:10'],
+            // 'riwayat_persalinan' => ['nullable', 'string'],
+            // 'jarak_kehamilan' => ['nullable', 'string', 'max:100'],
+            // 'riwayat_komplikasi' => ['nullable', 'string'],
         ], [
             // Custom error messages
             'email.required' => 'Email harus diisi',
@@ -145,9 +149,9 @@ class AuthController extends Controller
             'status_pernikahan.required' => 'Status pernikahan harus diisi',
             'nama_suami.required' => 'Nama suami harus diisi',
             'pekerjaan_suami.required' => 'Pekerjaan suami harus diisi',
-            'gravida.required' => 'Gravida harus diisi',
-            'gravida.min' => 'Gravida minimal 1',
-            'para.required' => 'Para harus diisi',
+            // 'gravida.required' => 'Gravida harus diisi',
+            // 'gravida.min' => 'Gravida minimal 1',
+            // 'para.required' => 'Para harus diisi',
         ]);
 
         try {
@@ -164,6 +168,7 @@ class AuthController extends Controller
             // 2. Buat data ibu hamil
             $ibuHamil = IbuHamil::create([
                 'user_id' => $user->id,
+                'puskesmas_id' => $validated['puskesmas_id'],
                 'nama_lengkap' => $validated['nama_lengkap'],
                 'nik' => $validated['nik'],
                 'tanggal_lahir' => $validated['tanggal_lahir'],
@@ -175,7 +180,10 @@ class AuthController extends Controller
                 'pendidikan_terakhir' => $validated['pendidikan_terakhir'],
                 'pekerjaan' => $validated['pekerjaan'] ?? null,
                 'status_pernikahan' => $validated['status_pernikahan'],
+                'golongan_darah' => $validated['golongan_darah'] ?? null,
             ]);
+
+            $user->assignRole('ibu_hamil');
 
             // 3. Buat data suami
             DataSuami::create([

@@ -15,6 +15,7 @@ class IbuHamil extends Model
         'user_id',
         'nama_lengkap',
         'nik',
+        'golongan_darah',
         'tanggal_lahir',
         'alamat_lengkap',
         'kelurahan',

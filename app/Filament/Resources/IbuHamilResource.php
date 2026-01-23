@@ -60,7 +60,7 @@ class IbuHamilResource extends Resource implements HasShieldPermissions
             return $query;
         }
 
-        if ($user->isPuskesmas) {
+        if ($user->isPuskesmas()) {
             $query->where('puskesmas_id', $user->puskesmas->id);
         }
 
