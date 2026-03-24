@@ -77,6 +77,14 @@ class IbuHamilResource extends Resource implements HasShieldPermissions
                             ->label('Nama Lengkap')
                             ->required()
                             ->maxLength(255),
+                        Select::make('puskesmas_id')
+                            ->label('Puskesmas')
+                            ->relationship('puskesmas', 'nama_puskesmas')
+                            ->required()
+                            ->searchable()
+                            ->preload()
+                            ->visible(fn () => Auth::user()->isAdmin())
+                            ->default(fn () => Auth::user()->isPuskesmas() ? Auth::user()->puskesmas->id : null),
                         TextInput::make('nik')
                             ->label('NIK')
                             ->numeric()

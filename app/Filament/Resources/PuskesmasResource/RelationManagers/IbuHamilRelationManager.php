@@ -210,14 +210,14 @@ class IbuHamilRelationManager extends RelationManager
                     ->multiple(),
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make()
-                    ->label('Tambah Ibu Hamil')
-                    ->icon('heroicon-o-plus')
-                    ->mutateFormDataUsing(function (array $data): array {
-                        $data['puskesmas_id'] = $this->getOwnerRecord()->id;
-                        return $data;
-                    })
-                    ->successNotificationTitle('Ibu Hamil berhasil ditambahkan'),
+                // Tables\Actions\CreateAction::make()
+                //     ->label('Tambah Ibu Hamil')
+                //     ->icon('heroicon-o-plus')
+                //     ->mutateFormDataUsing(function (array $data): array {
+                //         $data['puskesmas_id'] = $this->getOwnerRecord()->id;
+                //         return $data;
+                //     })
+                //     ->successNotificationTitle('Ibu Hamil berhasil ditambahkan'),
             ])
             ->actions([
                 Tables\Actions\Action::make('view')
